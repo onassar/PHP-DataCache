@@ -10,6 +10,8 @@
     /**
      * DataCache
      * 
+     * @note     Should on be used with native data structures. Don't try
+     *           caching stdClass', or something of that ilk.
      * @author   Oliver Nassar <onassar@gmail.com>
      * @abstract
      */
