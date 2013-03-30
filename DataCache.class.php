@@ -49,14 +49,15 @@
          * @static
          * @param  string $key
          * @param  mixed $value
+         * @param  integer $ttl
          * @return void
          */
-        protected static function _writeToPersistentCache($key, $value)
+        protected static function _writeToPersistentCache($key, $value, $ttl)
         {
             if (self::$_cacheType === 'memcached') {
-                MemcachedCache::write($key, $value);
+                MemcachedCache::write($key, $value, $ttl);
             } elseif (self::$_cacheType === 'apc') {
-                APCCache::write($key, $value);
+                APCCache::write($key, $value, $ttl);
             }
         }
 
@@ -86,12 +87,19 @@
          */
         public static function read($key)
         {
+            // ensure cache engine set
+            if (is_null(self::$_cacheType)) {
+                throw new Exception('_cacheType not set');
+            }
+
+            // check request and then persistent cache
             $requestCacheValue = RequestCache::read($key);
             if ($requestCacheValue === null) {
                 $persistentCacheValue = self::_getPersistentCacheValue($key);
                 if ($persistentCacheValue === null) {
                     return null;
                 }
+                RequestCache::write($key, $persistentCacheValue);
                 return $persistentCacheValue;
             }
             return $requestCacheValue;
@@ -104,11 +112,18 @@
          * @static
          * @param  string $key
          * @param  mixed $value
+         * @param  integer $ttl (default: 0)
          * @return void
          */
-        public static function write($key, $value)
+        public static function write($key, $value, $ttl = 0)
         {
+            // ensure cache engine set
+            if (is_null(self::$_cacheType)) {
+                throw new Exception('_cacheType not set');
+            }
+
+            // write to request and persistent cache
             RequestCache::write($key, $value);
-            self::_writeToPersistentCache($key, $value);
+            self::_writeToPersistentCache($key, $value, $ttl);
         }
     }
