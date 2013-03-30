@@ -1,10 +1,8 @@
 <?php
 
-    // dependency checks
+    // dependency check
     if (class_exists('RequestCache') === false) {
         throw new Exception('RequestCache required.');
-    } elseif (class_exists('MemcachedCache') === false) {
-        throw new Exception('MemcachedCache required.');
     }
 
     /**
