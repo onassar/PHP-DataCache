@@ -16,6 +16,14 @@
     abstract class DataCache
     {
         /**
+         * _bypass
+         * 
+         * @var    boolean
+         * @access protected
+         */
+        protected static $_bypass = false;
+
+        /**
          * _cacheType
          * 
          * @var    string
@@ -90,6 +98,11 @@
                 throw new Exception('_cacheType not set');
             }
 
+            // Bypassing checking
+            if (self::$_bypass === true) {
+                return null;
+            }
+
             // check request and then persistent cache
             $requestCacheValue = RequestCache::read($key);
             if ($requestCacheValue === null) {
@@ -101,6 +114,22 @@
                 return $persistentCacheValue;
             }
             return $requestCacheValue;
+        }
+
+        /**
+         * setupBypassing
+         * 
+         * @access public
+         * @static
+         * @param  string $key The key, which if found in _GET, will turn
+         *         caching off
+         * @return void
+         */
+        public static function setupBypassing($key)
+        {
+            if (isset($_GET[$key])) {
+                self::$_bypass = true;
+            }
         }
 
         /**
