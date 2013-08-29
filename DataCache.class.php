@@ -32,6 +32,23 @@
         protected static $_cacheType;
 
         /**
+         * _deleteFromPersistentCache
+         * 
+         * @access protected
+         * @static
+         * @param  string $key
+         * @return void
+         */
+        protected static function _deleteFromPersistentCache($key)
+        {
+            if (self::$_cacheType === 'memcached') {
+                MemcachedCache::delete($key);
+            } elseif (self::$_cacheType === 'apc') {
+                APCCache::delete($key);
+            }
+        }
+
+        /**
          * _getPersistentCacheValue
          * 
          * @access protected
@@ -65,6 +82,26 @@
             } elseif (self::$_cacheType === 'apc') {
                 APCCache::write($key, $value, $ttl);
             }
+        }
+
+        /**
+         * delete
+         * 
+         * @access public
+         * @static
+         * @param  string $key
+         * @return void
+         */
+        public static function delete($key)
+        {
+            // ensure cache engine set
+            if (is_null(self::$_cacheType)) {
+                throw new Exception('_cacheType not set');
+            }
+
+            // write to delete from persistent cache
+            RequestCache::simpleDelete($key);
+            self::_deleteFromPersistentCache($key);
         }
 
         /**
